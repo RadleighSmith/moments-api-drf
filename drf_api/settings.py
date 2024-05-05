@@ -65,15 +65,21 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
-if 'CLIENT_ORIGIN' in os.environ:
-    CORS_ALLOWED_ORIGINS = [
-        os.environ.get('CLIENT_ORIGIN')
-    ]
+CORS_ALLOWED_ORIGINS = []
 
+# Add production origin
+if 'CLIENT_ORIGIN' in os.environ:
+    client_origin = os.environ.get('CLIENT_ORIGIN')
+    if client_origin.startswith("https://"):
+        CORS_ALLOWED_ORIGINS.append(client_origin)
+    else:
+        CORS_ALLOWED_ORIGINS.append("https://" + client_origin)
+
+# Add development origin regex
 if 'CLIENT_ORIGIN_DEV' in os.environ:
     extracted_url = re.match(
-        r'^.+-', os.environ.get('CLIENT_ORIGIN_DEV', ''), re.IGNORECASE
-    ).group(0)
+        r'^(https?://[^/]+)', os.environ.get('CLIENT_ORIGIN_DEV', ''), re.IGNORECASE
+    ).group(1)
     CORS_ALLOWED_ORIGIN_REGEXES = [
         rf"{extracted_url}(eu|us)\d+\w\.gitpod\.io$",
     ]
